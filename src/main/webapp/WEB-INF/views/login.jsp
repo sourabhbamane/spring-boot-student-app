@@ -1,3 +1,4 @@
+```html
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -58,7 +59,7 @@
             color: #084b8a;
             background: #eef7ff;
             display: inline-block;
-            paging: 8px 12px;
+            padding: 8px 12px;
             border-radius: 6px;
         }
         form { display: block; margin-top: 6px; }
@@ -148,13 +149,15 @@
             <c:if test="${param.error == 'access_denied'}">
                 <div class="error">Access denied: Unrecognized role.</div>
             </c:if>
+            <c:if test="${param.expired != null}">
+                <div class="error">Session expired, please log in again.</div>
+            </c:if>
             <c:if test="${not empty message}">
                 <div class="info">${message}</div>
             </c:if>
         </div>
 
-        <form action="${pageContext.request.contextPath}/login" method="post" autocomplete="on" novalidate>
-            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        <form action="${pageContext.request.contextPath}/processLogin" method="post" autocomplete="on" novalidate>
             <label for="username">Username</label>
             <input id="username" name="username" type="text" required minlength="4" aria-required="true" autofocus />
             <label for="password">Password</label>

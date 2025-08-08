@@ -23,7 +23,7 @@
         <select name="studentId" id="studentId" required>
           <option value="">-- Select Student --</option>
           <c:forEach items="${students}" var="student">
-            <option value="${student.id}" ${marks.studentId == student.id ? 'selected' : ''}>${student.name}</option>
+            <option value="${student.studentId}" ${marks.studentId == student.studentId ? 'selected' : ''}>${student.name}</option>
           </c:forEach>
         </select>
         <c:if test="${not empty errors.studentId}">

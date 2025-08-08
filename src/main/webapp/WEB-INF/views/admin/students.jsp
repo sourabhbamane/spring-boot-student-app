@@ -181,15 +181,15 @@
                 <tbody>
                     <c:forEach var="student" items="${students}">
                         <tr>
-                            <td>${student.id}</td>
+                            <td>${student.studentId}</td>
                             <td>${student.name}</td>
                             <td>${student.email}</td>
                             <td><fmt:formatDate value="${student.dob}" pattern="yyyy-MM-dd" /></td>
                             <td>${student.gender}</td>
                             <td>${student.address}</td>
                             <td class="actions">
-                                <a href="${pageContext.request.contextPath}/admin/editStudent/${student.id}" class="action-btn edit-btn">Edit</a>
-                                <a href="${pageContext.request.contextPath}/admin/deleteStudent/${student.id}"
+                                <a href="${pageContext.request.contextPath}/admin/editStudent/${student.studentId}" class="action-btn edit-btn">Edit</a>
+                                <a href="${pageContext.request.contextPath}/admin/deleteStudent/${student.studentId}"
                                    class="action-btn delete-btn"
                                    onclick="return confirm('Are you sure you want to delete this student?');">
                                    Delete

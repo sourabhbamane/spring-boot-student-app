@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%@ include file="../includes/studentHeader.jsp" %>
 <%@ include file="../includes/studentSidebar.jsp" %>
@@ -166,8 +167,8 @@
 <div class="layout">
   <!-- Main content -->
   <div class="main">
-    <h2>Welcome, ${sessionScope.user.username}</h2>
-    <p style="color:#6c757d;">Student ID: ${student.id}</p>
+    <h2>Welcome, ${sessionScope.username}</h2>
+    <p style="color:#6c757d;">Student ID: ${student.studentId}</p>
 
     <div class="cards">
       <div class="card">
@@ -201,10 +202,10 @@
     <!-- Profile Tab -->
     <div id="profile" class="tab-content active">
       <table>
-        <tr><th>ID</th><td>${student.id}</td></tr>
+        <tr><th>ID</th><td>${student.studentId}</td></tr>
         <tr><th>Name</th><td>${student.name}</td></tr>
         <tr><th>Email</th><td>${student.email}</td></tr>
-        <tr><th>DOB</th><td><fmt:formatDate value="${student.dob}" pattern="yyyy-MM-dd"/></td></tr>
+        <tr><th>DOB</th><td>${formattedDob}</td></tr>
         <tr><th>Gender</th><td>${student.gender}</td></tr>
         <tr><th>Address</th><td>${student.address}</td></tr>
       </table>

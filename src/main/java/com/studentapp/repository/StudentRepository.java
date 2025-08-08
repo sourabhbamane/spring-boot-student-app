@@ -4,6 +4,7 @@ import com.studentapp.model.Student;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Optional;
 public interface StudentRepository extends JpaRepository<Student, Long> {
     // find active (not soft-deleted)
     List<Student> findByDeleteFlagFalse();
-    Optional<Student> findByIdAndDeleteFlagFalse(Long studentId);
+    //Optional<Student> findByStudentIdAndDeleteFlagFalse(Long studentId);
 
 
     // count active
@@ -25,4 +26,9 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     // find by email
     Optional<Student> findByEmail(String email);
     List<Student> findAllByDeleteFlagFalse();
+
+   // Optional<Student> findByIdAndDeleteFlagFalse(Long id);
+
+    @Query("SELECT s FROM Student s WHERE s.studentId = :studentId AND s.deleteFlag = false")
+    Optional<Student> findByStudentIdAndDeleteFlagFalse(Long studentId);
 }

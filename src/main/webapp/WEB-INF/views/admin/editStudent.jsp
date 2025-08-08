@@ -84,8 +84,8 @@
 <div class="form-container">
     <h2>Edit Student</h2>
 
-    <form action="${pageContext.request.contextPath}/admin/updateStudent/${student.id}" method="post">
-        <input type="hidden" name="id" value="${student.id}" />
+    <form action="${pageContext.request.contextPath}/admin/updateStudent/${student.studentId}" method="post">
+        <input type="hidden" name="id" value="${student.studentId}" />
 
         <label for="name">Name:</label>
         <input type="text" name="name" id="name" value="${student.name}" required />

@@ -1,55 +1,97 @@
 package com.studentapp.security;
 
-import com.studentapp.enums.UserRole;
-import com.studentapp.model.User;
-import com.studentapp.service.UserService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Lazy
-    @Autowired
-    private UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(CustomLoginSuccessHandler.class);
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication)
-            throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
+        logger.debug("Processing successful authentication for user: {}", authentication.getName());
         HttpSession session = request.getSession();
         String username = authentication.getName();
+        String role = authentication.getAuthorities().stream()
+                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+                .findFirst()
+                .orElse("UNKNOWN");
+
+        logger.info("Successful login for user: {}, role: {}", username, role);
         session.setAttribute("username", username);
+        session.setAttribute("role", role);
 
-        Optional<User> optionalUser = userService.findByUsername(username);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            session.setAttribute("role", user.getRole() != null ? user.getRole().name() : "UNKNOWN");
-            if (user.isStudentRole() && user.getStudent() != null) {
-                session.setAttribute("studentId", user.getStudent().getStudentId());
-            }
-        } else {
-            session.setAttribute("role", "UNKNOWN");
-        }
-
-        if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-        } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_STUDENT"))) {
-            response.sendRedirect(request.getContextPath() + "/student/dashboard");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/login?error=access_denied");
-        }
+        String redirectUrl = "ADMIN".equals(role) ? "/admin/dashboard" : "/student/dashboard";
+        logger.debug("Redirecting to: {}", redirectUrl);
+        response.sendRedirect(request.getContextPath() + redirectUrl);
     }
 }
+
+
+//package com.studentapp.security;
+//
+//import com.studentapp.model.Student;
+//import com.studentapp.model.User;
+//import com.studentapp.repository.UserRepository;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpServletResponse;
+//import jakarta.servlet.http.HttpSession;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//import org.springframework.security.core.Authentication;
+//import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+//import org.springframework.stereotype.Component;
+//
+//import java.io.IOException;
+//import java.util.Optional;
+//
+//@Component
+//public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
+//
+//    private static final Logger logger = LoggerFactory.getLogger(CustomLoginSuccessHandler.class);
+//
+//    private final UserRepository userRepository;
+//
+//    public CustomLoginSuccessHandler(UserRepository userRepository) {
+//        this.userRepository = userRepository;
+//    }
+//
+//    @Override
+//    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+//                                        Authentication authentication) throws IOException {
+//        HttpSession session = request.getSession();
+//        String username = authentication.getName();
+//        String role = authentication.getAuthorities().stream()
+//                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+//                .findFirst()
+//                .orElse("UNKNOWN");
+//
+//        logger.info("Successful login for user: {}, role: {}", username, role);
+//        session.setAttribute("username", username);
+//        session.setAttribute("role", role);
+//
+//        if ("STUDENT".equals(role)) {
+//            Optional<User> userOpt = userRepository.findByUsernameAndDeleteFlagFalse(username);
+//            if (userOpt.isPresent()) {
+//                Student student = userOpt.get().getStudent();
+//                if (student != null) {
+//                    session.setAttribute("studentId", student.getStudentId());
+//                    logger.debug("Set session studentId: {}", student.getStudentId());
+//                }
+//            }
+//        }
+//
+//        String redirectUrl = "ADMIN".equals(role) ? "/admin/dashboard" : "/student/dashboard";
+//        response.sendRedirect(request.getContextPath() + redirectUrl);
+//    }
+//}
