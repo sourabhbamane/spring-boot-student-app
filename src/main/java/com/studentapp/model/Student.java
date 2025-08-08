@@ -4,18 +4,24 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 @Entity
 @Table(name = "student_details")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Student {
 
     @Id
@@ -59,4 +65,12 @@ public class Student {
 
     @Column(name = "delete_flag", nullable = false)
     private boolean deleteFlag = false;
+
+    //  Custom getter for formatted DOB (for use in JSP)
+    public String getFormattedDob() {
+        return dob != null
+                ? dob.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"))
+                : "";
+    }
+
 }

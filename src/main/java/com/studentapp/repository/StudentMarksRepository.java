@@ -27,4 +27,5 @@ public interface StudentMarksRepository extends JpaRepository<StudentMarks, Long
     boolean existsByStudentIdAndCourseIdAndDeleteFlagFalse(Long studentId, Integer courseId);
     Page<StudentMarks> findByDeleteFlagFalse(Pageable pageable);
     List<StudentMarks> findAllByDeleteFlagFalse();
+    //List<StudentMarks> findByDeleteFlagFalse();
 }

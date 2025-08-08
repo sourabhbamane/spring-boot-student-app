@@ -1,6 +1,7 @@
 package com.studentapp.controller;
 
 import com.studentapp.model.Student;
+import com.studentapp.model.StudentMarks;
 import com.studentapp.service.CourseService;
 import com.studentapp.service.MarksService;
 import com.studentapp.service.StudentService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -65,10 +67,66 @@ public class AdminController {
         }
     }
 
+//    @GetMapping("/students")
+//    public String viewAllStudents(Model model, HttpSession session) {
+//        logger.info("=== Starting viewAllStudents method ===");
+//
+//        // Verify user is authenticated
+//        String currentUser = (String) session.getAttribute("username");
+//        logger.info("Current user from session: {}", currentUser);
+//
+//        try {
+//            List<Student> students = studentService.getAllStudents();
+//            logger.info("Retrieved {} students from service", students != null ? students.size() : 0);
+//
+//            if (students != null && !students.isEmpty()) {
+//                logger.info("Students found:");
+//                for (Student s : students) {
+//                    logger.info("  - Student: ID={}, Name={}, Email={}, DeleteFlag={}",
+//                            s.getStudentId(), s.getName(), s.getEmail(), s.isDeleteFlag());
+//                }
+//            } else {
+//                logger.warn("No students found or students list is null");
+//            }
+//
+//            // Add students to model
+//            model.addAttribute("students", students);
+//
+//            // Add debugging attributes
+//            model.addAttribute("studentsCount", students != null ? students.size() : 0);
+//            model.addAttribute("debugInfo", "Students loaded at " + java.time.LocalDateTime.now());
+//
+//            logger.info("Added {} students to model", students != null ? students.size() : 0);
+//            logger.info("Returning view: admin/students");
+//
+//            return "admin/students";
+//
+//        } catch (Exception e) {
+//            logger.error("Error fetching students: {}", e.getMessage(), e);
+//            model.addAttribute("error", "Error fetching students: " + e.getMessage());
+//            model.addAttribute("students", new java.util.ArrayList<>());
+//            return "admin/students";
+//        }
+//    }
+
     @GetMapping("/students")
-    public String viewAllStudents(Model model) {
-        logger.info("Listing all students");
-        model.addAttribute("students", studentService.getAllStudents());
+    public String viewStudents(@RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "10") int size,
+                               @RequestParam(required = false) String keyword,
+                               Model model) {
+        Page<Student> studentPage;
+
+        if (keyword != null && !keyword.isEmpty()) {
+            studentPage = studentService.searchStudents(keyword, page, size);
+            model.addAttribute("keyword", keyword);
+        } else {
+            studentPage = studentService.getPaginatedStudents(page, size);
+        }
+
+        model.addAttribute("students", studentPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", studentPage.getTotalPages());
+
         return "admin/students";
     }
 
@@ -78,10 +136,11 @@ public class AdminController {
         try {
             Student student = studentService.getStudentByIdDetails(studentId);
             model.addAttribute("student", student);
-            return "admin/editStudent";
+            return "admin/editStudent"; // resolves to /WEB-INF/views/admin/editStudent.jsp
         } catch (IllegalArgumentException e) {
             logger.warn("Student not found: {}", studentId);
             model.addAttribute("error", "Student not found");
+            model.addAttribute("students", studentService.getAllStudents()); // required for students.jsp
             return "admin/students";
         }
     }

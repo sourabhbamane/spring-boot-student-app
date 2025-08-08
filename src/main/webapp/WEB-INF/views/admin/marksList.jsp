@@ -2,50 +2,104 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ include file="../includes/header.jsp" %>
-<%@ include file="../includes/sidebar.jsp" %>
 
+<!DOCTYPE html>
 <html>
 <head>
     <title>Marks List</title>
     <style>
+        /* Your existing styles */
+        :root {
+            --bg: #f3f6fb;
+            --card: #fff;
+            --muted: #6b7280;
+            --primary: #0b6cf0;
+            --danger: #dc3545;
+            --table-border: #e3e6ec;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: #0b2536;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: var(--card);
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            z-index: 1000;
+        }
+
+        .brand { font-weight: 700; color: var(--primary); font-size: 18px; }
+        .welcome { font-size: 14px; color: #333; }
+        .header a {
+            background: var(--danger);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .layout { display: flex; margin-top: 70px; }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 2px 0 6px rgba(0,0,0,0.05);
+            min-height: calc(100vh - 70px);
+        }
+
+        .nav a {
+            display: block;
+            padding: 12px 16px;
+            color: #0b2536;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .nav a:hover { background-color: #f0f4ff; }
+        .nav a.active { background-color: var(--primary); color: #fff; }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
         .container {
             max-width: 1100px;
-            margin: 22px auto;
+            margin: 0 auto;
             padding: 0 20px;
         }
 
         .card {
             background: var(--card);
             border-radius: 10px;
-            padding: 18px;
+            padding: 20px;
             box-shadow: 0 6px 20px rgba(12,40,80,0.04);
         }
 
-        h2 {
-            margin: 0 0 12px 0;
-            color: var(--primary);
-            font-size: 22px;
-        }
+        h2 { color: var(--primary); font-size: 22px; margin-bottom: 16px; }
 
         .controls {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
 
-        .controls .left {
-            color: var(--muted);
-            font-size: 14px;
-        }
-
-        .controls .actions {
-            display: flex;
-            gap: 8px;
-        }
+        .controls .left { color: var(--muted); font-size: 14px; }
+        .controls .actions { display: flex; gap: 8px; }
 
         .btn {
             padding: 8px 12px;
@@ -56,44 +110,30 @@
             color: #fff;
         }
 
-        .btn.assign {
-            background: var(--primary);
-        }
+        .btn.assign { background: var(--primary); }
+        .btn.back { background: #6c757d; }
+        .btn.edit { background: var(--primary); padding: 6px 10px; }
+        .btn.delete { background: var(--danger); padding: 6px 10px; }
 
-        .btn.back {
-            background: #6c757d;
-        }
-
-        .btn.edit {
-            background: var(--primary);
-            padding: 6px 10px;
-        }
-
-        .btn.delete {
-            background: var(--danger);
-            padding: 6px 10px;
+        .success-message, .error-message {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 500;
         }
 
         .success-message {
-            color: #155724;
             background: #d4edda;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
         .error-message {
-            color: #721c24;
             background: #f8d7da;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
-        .table-wrap {
-            overflow-x: auto;
-            margin-top: 10px;
-        }
+        .table-wrap { overflow-x: auto; margin-top: 10px; }
 
         table {
             width: 100%;
@@ -108,121 +148,125 @@
             font-size: 14px;
         }
 
-        th {
-            background: transparent;
-            color: #233;
-            font-weight: 700;
-        }
+        th { font-weight: 700; }
+        td.actions { text-align: right; white-space: nowrap; }
 
-        tr:hover {
-            background: #fbfdff;
-        }
-
-        td.actions {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .muted {
-            color: var(--muted);
-            font-size: 13px;
-        }
+        .muted { color: var(--muted); font-size: 13px; }
 
         .no-data {
-            padding: 20px;
             text-align: center;
+            padding: 20px;
             color: var(--muted);
         }
 
-        @media (max-width: 760px) {
-            th, td {
-                padding: 10px;
-                font-size: 13px;
-            }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
 
-            .controls {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
+        .pagination a {
+            padding: 6px 12px;
+            margin: 0 4px;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+        }
+
+        .pagination a.active {
+            background-color: var(--primary);
+            color: white;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-            <h2>Assigned Marks</h2>
-            <div class="controls">
-                <div class="left muted">
-                    Showing ${marksList != null ? fn:length(marksList) : 0} records
+<div class="header">
+    <div class="brand">Student App — Admin</div>
+    <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
+    <div><a href="${pageContext.request.contextPath}/logout">Logout</a></div>
+</div>
+
+<div class="layout">
+    <aside class="sidebar">
+        <nav class="nav">
+            <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
+            <a href="${pageContext.request.contextPath}/admin/registerStudent">Add Student</a>
+            <a href="${pageContext.request.contextPath}/admin/students">All Students</a>
+            <a href="${pageContext.request.contextPath}/admin/courses">Courses</a>
+            <a href="${pageContext.request.contextPath}/admin/courses/add">Add Course</a>
+            <a href="${pageContext.request.contextPath}/admin/marks/list" class="active">Marks</a>
+            <a href="${pageContext.request.contextPath}/admin/courses/enroll">Enroll Students</a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="container">
+            <div class="card">
+                <h2>Assigned Marks</h2>
+
+                <div class="controls">
+                    <div class="left muted">
+                        Showing ${marksPage.totalElements} records
+                    </div>
+                    <div class="actions">
+                        <a href="${pageContext.request.contextPath}/admin/marks/assign" class="btn assign">+ Assign Marks</a>
+                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn back">← Dashboard</a>
+                    </div>
                 </div>
-                <div class="actions">
-                    <a href="${pageContext.request.contextPath}/admin/marks/assign" class="btn assign">+ Assign Marks</a>
-                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn back">← Dashboard</a>
+
+                <c:if test="${marksPage.totalElements == 0}">
+                    <div class="no-data">No marks assigned yet.</div>
+                </c:if>
+
+                <c:if test="${marksPage.totalElements > 0}">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Marks</th>
+                                    <th>Assigned By</th>
+                                    <th>Assigned On</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="mark" items="${marksPage.content}">
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:600;">${mark.student.name}</div>
+                                            <div class="muted">ID: ${mark.studentId}</div>
+                                        </td>
+                                        <td>
+                                            <div style="font-weight:600;">${mark.course.courseName}</div>
+                                            <div class="muted">Course ID: ${mark.courseId}</div>
+                                        </td>
+                                        <td style="font-weight:700;">${mark.marks}</td>
+                                        <td class="muted">${mark.createdBy}</td>
+                                        <td class="muted">${mark.formattedCreatedOn}</td>
+                                        <td class="actions">
+                                            <a class="btn edit" href="${pageContext.request.contextPath}/admin/marks/edit/${mark.id}">Edit</a>
+                                            <a class="btn delete" href="${pageContext.request.contextPath}/admin/marks/delete/${mark.id}"
+                                               onclick="return confirm('Delete this mark?');">Delete</a>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </c:if>
+
+                <div class="pagination">
+                    <c:forEach var="i" begin="0" end="${marksPage.totalPages - 1}">
+                        <a href="?page=${i}" class="${i == currentPage ? 'active' : ''}">${i + 1}</a>
+                    </c:forEach>
                 </div>
             </div>
         </div>
-
-        <c:if test="${not empty success}">
-            <div style="margin:12px 0;"><span class="success-message">${success}</span></div>
-        </c:if>
-
-        <c:if test="${not empty error}">
-            <div style="margin:12px 0;"><span class="error-message">${error}</span></div>
-        </c:if>
-
-        <div class="table-wrap">
-            <c:if test="${empty marksList}">
-                <div class="no-data">No marks assigned yet.</div>
-            </c:if>
-
-            <c:if test="${not empty marksList}">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>Course</th>
-                        <th style="width:120px">Marks</th>
-                        <th>Assigned By</th>
-                        <th>Assigned On</th>
-                        <th style="width:160px;text-align:right;">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <c:forEach var="mark" items="${marksList}">
-                        <tr>
-                            <td>
-                                <div style="font-weight:600;">${mark.student != null ? mark.student.name : '—'}</div>
-                                <div class="muted" style="font-size:12px;">ID: ${mark.studentId}</div>
-                            </td>
-                            <td>
-                                <div style="font-weight:600;">${mark.course != null ? mark.course.name : '—'}</div>
-                                <div class="muted" style="font-size:12px;">Course ID: ${mark.courseId}</div>
-                            </td>
-                            <td style="font-weight:700;">${mark.marks}</td>
-                            <td class="muted">${mark.createdBy != null ? mark.createdBy : '-'}</td>
-                            <td class="muted">
-                                <c:choose>
-                                    <c:when test="${not empty mark.createdOn}">
-                                        <fmt:formatDate value="${mark.createdOn}" pattern="yyyy-MM-dd HH:mm" />
-                                    </c:when>
-                                    <c:otherwise>-</c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td class="actions">
-                                <a class="btn edit" href="${pageContext.request.contextPath}/admin/marks/edit/${mark.id}">Edit</a>
-                                <a class="btn delete" href="${pageContext.request.contextPath}/admin/marks/delete/${mark.id}"
-                                   onclick="return confirm('Delete this mark?');">Delete</a>
-                            </td>
-                        </tr>
-                    </c:forEach>
-                    </tbody>
-                </table>
-            </c:if>
-        </div>
-    </div>
+    </main>
 </div>
 
 </body>

@@ -1,23 +1,62 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ include file="../includes/header.jsp" %>
-<%@ include file="../includes/sidebar.jsp" %>
 
+<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Edit Student</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            margin: 0;
+        :root {
+            --bg: #f3f6fb;
+            --card: #fff;
+            --muted: #6b7280;
+            --primary: #0b6cf0;
+            --danger: #dc3545;
+            --accent: #28a745;
         }
 
-        .form-container {
+        body {
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: var(--card);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .header .brand {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .header .welcome {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .header .right-side a {
+            background: var(--danger);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .container {
             max-width: 600px;
             margin: 40px auto;
             background-color: var(--card);
-            padding: 25px 30px;
+            padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 12px rgba(0,0,0,0.05);
         }
@@ -25,7 +64,7 @@
         h2 {
             text-align: center;
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
@@ -51,42 +90,67 @@
 
         .form-actions {
             text-align: center;
-            margin-top: 25px;
+            margin-top: 30px;
         }
 
         .btn {
             padding: 10px 20px;
             border-radius: 6px;
-            border: none;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            color: #fff;
+            color: white;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn.update {
             background-color: var(--primary);
         }
 
-        .btn:hover {
-            background-color: #003f7f;
+        .btn.update:hover {
+            background-color: #004bb7;
         }
 
-        .btn-cancel {
+        .btn.cancel {
             background-color: #6c757d;
             margin-left: 10px;
         }
 
-        .btn-cancel:hover {
+        .btn.cancel:hover {
             background-color: #5a6268;
+        }
+
+        .error {
+            text-align: center;
+            color: red;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-<div class="form-container">
+<!-- Header -->
+<div class="header">
+    <div class="left-side">
+        <div class="brand">Student App — Admin</div>
+        <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
+    </div>
+    <div class="right-side">
+        <a href="${pageContext.request.contextPath}/logout">Logout</a>
+    </div>
+</div>
+
+<!-- Edit Form -->
+<div class="container">
     <h2>Edit Student</h2>
 
-    <form action="${pageContext.request.contextPath}/admin/updateStudent/${student.studentId}" method="post">
-        <input type="hidden" name="id" value="${student.studentId}" />
+    <c:if test="${not empty error}">
+        <div class="error">${error}</div>
+    </c:if>
 
+    <form action="${pageContext.request.contextPath}/admin/updateStudent/${student.studentId}" method="post">
         <label for="name">Name:</label>
         <input type="text" name="name" id="name" value="${student.name}" required />
 
@@ -107,8 +171,8 @@
         <textarea name="address" id="address" rows="3">${student.address}</textarea>
 
         <div class="form-actions">
-            <button type="submit" class="btn">Update Student</button>
-            <a href="${pageContext.request.contextPath}/admin/students" class="btn btn-cancel">Cancel</a>
+            <button type="submit" class="btn update">Update Student</button>
+            <a href="${pageContext.request.contextPath}/admin/students" class="btn cancel">Cancel</a>
         </div>
     </form>
 </div>

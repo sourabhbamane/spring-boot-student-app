@@ -165,7 +165,7 @@
             </div>
         </form>
         <div class="form-actions">
-            <a href="${pageContext.request.contextPath}/login" class="btn">Back to Login</a>
+            <a href="${pageContext.request.contextPath}/login" class="btn">Back</a>
         </div>
     </div>
 </div>

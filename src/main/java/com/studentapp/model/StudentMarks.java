@@ -1,19 +1,20 @@
 package com.studentapp.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "student_marks")
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentMarks {
 
     @Id
@@ -53,4 +54,10 @@ public class StudentMarks {
 
     @Column(name = "delete_flag", nullable = false)
     private Boolean deleteFlag = false;
+    // Getter to use in JSP
+    public String getFormattedCreatedOn() {
+        return createdOn != null
+                ? createdOn.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                : "-";
+    }
 }

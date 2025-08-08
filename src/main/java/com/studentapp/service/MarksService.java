@@ -163,4 +163,8 @@ public class MarksService {
             marksRepository.save(marks);
         });
     }
+
+    public List<StudentMarks> getAllActiveMarks() {
+        return marksRepository.findByDeleteFlagFalse();
+    }
 }

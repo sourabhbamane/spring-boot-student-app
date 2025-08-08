@@ -2,6 +2,7 @@ package com.studentapp.service;
 
 import com.studentapp.enums.UserRole;
 import com.studentapp.model.Student;
+import com.studentapp.model.StudentMarks;
 import com.studentapp.model.User;
 import com.studentapp.repository.StudentRepository;
 import com.studentapp.repository.UserRepository;
@@ -178,5 +179,14 @@ public class StudentService {
     public Optional<Student> getStudentById(Long id) {
         if (id == null) return Optional.empty();
         return studentRepository.findByStudentIdAndDeleteFlagFalse(id);
+    }
+
+    public Page<Student> searchStudents(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return studentRepository.findByNameContainingIgnoreCaseAndDeleteFlagFalse(keyword, pageable);
+    }
+    public Page<Student> getPaginatedStudents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return studentRepository.findByDeleteFlagFalse(pageable);
     }
 }

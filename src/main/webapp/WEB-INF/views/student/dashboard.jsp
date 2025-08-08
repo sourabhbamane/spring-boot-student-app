@@ -231,7 +231,7 @@
             <c:forEach var="course" items="${courses}">
               <tr>
                 <td><input type="checkbox" class="course-checkbox" name="courseIds" value="${course.courseId}" onchange="limitSelection(this)"></td>
-                <td>${course.name}</td>
+                <td>${course.courseName}</td>
                 <td>${course.description}</td>
                 <td>${course.credits}</td>
               </tr>
@@ -261,7 +261,7 @@
         <tbody>
           <c:forEach var="mark" items="${studentMarks}">
             <tr>
-              <td>${mark.course.name}</td>
+              <td>${mark.course.courseName}</td>
               <td>${mark.marks}</td>
             </tr>
           </c:forEach>

@@ -31,4 +31,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query("SELECT s FROM Student s WHERE s.studentId = :studentId AND s.deleteFlag = false")
     Optional<Student> findByStudentIdAndDeleteFlagFalse(Long studentId);
+
+    Page<Student> findByNameContainingIgnoreCaseAndDeleteFlagFalse(String keyword, Pageable pageable);
 }
