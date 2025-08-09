@@ -1,6 +1,8 @@
 package com.studentapp.controller;
 
 import com.studentapp.dto.MarksDTO;
+import com.studentapp.kafka.KafkaProducer;
+import com.studentapp.kafka.MarksEvent;
 import com.studentapp.model.*;
 import com.studentapp.service.CourseService;
 import com.studentapp.service.MarksService;
@@ -9,7 +11,6 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin/marks")
@@ -33,11 +37,16 @@ public class MarksController {
     private final MarksService marksService;
     private final StudentService studentService;
     private final CourseService courseService;
+    private final KafkaProducer kafkaProducer;
 
-    public MarksController(MarksService marksService, StudentService studentService, CourseService courseService) {
+    public MarksController(MarksService marksService,
+                           StudentService studentService,
+                           CourseService courseService,
+                           KafkaProducer kafkaProducer) {
         this.marksService = marksService;
         this.studentService = studentService;
         this.courseService = courseService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     @GetMapping("/assign")
@@ -66,15 +75,17 @@ public class MarksController {
         Optional<Student> studentOpt = studentService.getStudentById(marksDTO.getStudentId());
         Optional<Course> courseOpt = courseService.getCourseById(marksDTO.getCourseId());
 
-        if (studentOpt.isEmpty()) {
-            model.addAttribute("error", "Selected student does not exist.");
-        } else if (courseOpt.isEmpty()) {
-            model.addAttribute("error", "Selected course does not exist.");
+        if (studentOpt.isEmpty() || courseOpt.isEmpty()) {
+            model.addAttribute("error", "Invalid student or course.");
         } else if (!courseService.isStudentEnrolled(marksDTO.getStudentId(), marksDTO.getCourseId())) {
             model.addAttribute("error", "Student is not enrolled in the selected course.");
         } else {
-            Optional<StudentMarks> existingOpt = marksService.getMarksByStudentIdAndCourseId(marksDTO.getStudentId(), marksDTO.getCourseId());
-            if (existingOpt.isPresent() && !Objects.equals(existingOpt.get().getId(), marksDTO.getId()) && !existingOpt.get().getDeleteFlag()) {
+            Optional<StudentMarks> existingOpt =
+                    marksService.getMarksByStudentIdAndCourseId(marksDTO.getStudentId(), marksDTO.getCourseId());
+
+            if (existingOpt.isPresent() &&
+                    !Objects.equals(existingOpt.get().getId(), marksDTO.getId()) &&
+                    !existingOpt.get().getDeleteFlag()) {
                 model.addAttribute("error", "Marks already assigned for this student and course.");
             } else {
                 StudentMarks studentMarks = StudentMarks.builder()
@@ -86,7 +97,22 @@ public class MarksController {
 
                 String currentUser = userDetails != null ? userDetails.getUsername() : "system";
                 marksService.saveOrUpdateMarks(studentMarks, currentUser);
-                redirectAttributes.addFlashAttribute("success", "Marks saved successfully!");
+
+                // Build event
+                String action = existingOpt.isPresent() ? "UPDATE" : "CREATE";
+                MarksEvent event = MarksEvent.builder()
+                        .studentId(marksDTO.getStudentId())
+                        .courseId(Long.valueOf(marksDTO.getCourseId()))
+                        .marks(marksDTO.getMarks())
+                        .action(action)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+                // Send to Kafka
+                kafkaProducer.sendMarksEvent(event);
+                kafkaProducer.sendStudentGradeRecalcTrigger(marksDTO.getStudentId());
+
+                redirectAttributes.addFlashAttribute("success", "Marks saved and grade recalculation triggered!");
                 return "redirect:/admin/dashboard";
             }
         }

@@ -64,5 +64,6 @@
 
     <a href="${pageContext.request.contextPath}/admin/courses/enroll"
        class="${pageContext.request.requestURI.endsWith('/courses/enroll') ? 'active' : ''}">Enroll Students</a>
+       <a href="${pageContext.request.contextPath}/admin/reports" class="btn">View Final Report</a>
   </nav>
 </aside>
