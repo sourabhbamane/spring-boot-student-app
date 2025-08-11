@@ -14,6 +14,12 @@ public class LoginController {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
+    @GetMapping("/")
+    public String home() {
+        // Redirect based on authentication or just a welcome page
+        return "redirect:/login";  // or a dashboard page if already logged in
+    }
+
     @GetMapping("/login")
     public String showLoginPage(
             HttpSession session,

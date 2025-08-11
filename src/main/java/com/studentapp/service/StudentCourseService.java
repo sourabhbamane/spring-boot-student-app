@@ -22,9 +22,7 @@ public class StudentCourseService {
         this.studentCourseRepository = studentCourseRepository;
     }
 
-    /**
-     * Enrolls a student to a course (soft-insert). Will skip if already enrolled (delete_flag = false).
-     */
+   //Enrolls a student to a course (soft-insert). Will skip if already enrolled (delete_flag = false).
     @Transactional
     public StudentCourse enrollStudentToCourse(StudentCourse sc) {
         if (sc == null) {
@@ -58,9 +56,7 @@ public class StudentCourseService {
         return saved;
     }
 
-    /**
-     * Return all StudentCourse mappings for a student (active ones).
-     */
+    //Return all StudentCourse mappings for a student (active ones).
     @Transactional(readOnly = true)
     public List<StudentCourse> getCoursesByStudentId(Long studentId) {
         if (studentId == null) {
@@ -71,9 +67,7 @@ public class StudentCourseService {
         return studentCourseRepository.findByStudentIdAndDeleteFlagFalse(studentId);
     }
 
-    /**
-     * Return just courseIds for a student (active enrollments).
-     */
+    //Return just courseIds for a student (active enrollments).
     @Transactional(readOnly = true)
     public List<Integer> getCourseIdsByStudentId(Long studentId) {
         if (studentId == null) {
@@ -83,18 +77,14 @@ public class StudentCourseService {
         return studentCourseRepository.findCourseIdsByStudentId(studentId);
     }
 
-    /**
-     * Return all mappings (optionally used for admin views).
-     */
+    //Return all mappings (optionally used for admin views).
     @Transactional(readOnly = true)
     public List<StudentCourse> getAllStudentCourseMappings() {
         logger.debug("Fetching all student-course mappings");
         return studentCourseRepository.findAll();
     }
 
-    /**
-     * Soft-delete an enrollment mapping by id (set deleteFlag = true).
-     */
+    //Soft-delete an enrollment mapping by id (set deleteFlag = true).
     @Transactional
     public void softDeleteEnrollment(Long mappingId, String modifiedBy) {
         if (mappingId == null) {
@@ -110,7 +100,7 @@ public class StudentCourseService {
             logger.info("Soft-deleted enrollment id={} studentId={} courseId={}", mappingId, sc.getStudentId(), sc.getCourseId());
         });
     }
-    /// /
+
     public StudentCourse saveStudentCourse(StudentCourse studentCourse, String createdBy) {
         logger.info("Enrolling student ID: {} in course ID: {}", studentCourse.getStudentId(), studentCourse.getCourseId());
         studentCourse.setCreatedBy(createdBy);
