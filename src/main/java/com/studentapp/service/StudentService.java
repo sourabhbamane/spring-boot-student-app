@@ -2,7 +2,6 @@ package com.studentapp.service;
 
 import com.studentapp.enums.UserRole;
 import com.studentapp.model.Student;
-import com.studentapp.model.StudentMarks;
 import com.studentapp.model.User;
 import com.studentapp.repository.StudentRepository;
 import com.studentapp.repository.UserRepository;
@@ -13,12 +12,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -45,17 +46,33 @@ public class StudentService {
     }
     @Transactional
     public Student saveStudent(Student student, String createdBy) {
-        validateStudent(student); // Non-proxied method
-        String user = StringUtils.hasText(createdBy) ? createdBy : "system";
+        validateStudent(student);
+
+        String user;
+        if (StringUtils.hasText(createdBy)) {
+            // Always trust explicit createdBy value
+            user = createdBy;
+        } else {
+            // Only do fallback detection if createdBy is not given
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+                user = "self-register";
+            } else {
+                user = auth.getName();
+            }
+        }
+
         if (student.getStudentId() == null) {
             student.setCreatedBy(user);
             student.setDeleteFlag(false);
         } else {
-            studentRepository.findByStudentIdAndDeleteFlagFalse(student.getStudentId()).ifPresent(existing -> {
-                student.setCreatedBy(existing.getCreatedBy());
-                student.setCreatedOn(existing.getCreatedOn());
-            });
+            studentRepository.findByStudentIdAndDeleteFlagFalse(student.getStudentId())
+                    .ifPresent(existing -> {
+                        student.setCreatedBy(existing.getCreatedBy());
+                        student.setCreatedOn(existing.getCreatedOn());
+                    });
         }
+
         student.setModifiedBy(user);
         return studentRepository.save(student);
     }
@@ -65,51 +82,6 @@ public class StudentService {
         if (!StringUtils.hasText(student.getName())) throw new IllegalArgumentException("Student name is required");
         if (!StringUtils.hasText(student.getEmail())) throw new IllegalArgumentException("Student email is required");
     }
-//    @Transactional
-//    public Student saveStudent(Student student, String createdBy) {
-//        if (student == null) throw new IllegalArgumentException("Student cannot be null");
-//        if (!StringUtils.hasText(student.getName())) throw new IllegalArgumentException("Student name is required");
-//        if (!StringUtils.hasText(student.getEmail())) throw new IllegalArgumentException("Student email is required");
-//
-//        String user = StringUtils.hasText(createdBy) ? createdBy : "system";
-//        logger.info("Saving student: {}", student.getName());
-//
-//        if (student.getStudentId() == null) {
-//            student.setCreatedBy(user);
-//            student.setDeleteFlag(false);
-//        } else {
-//            studentRepository.findByStudentIdAndDeleteFlagFalse(student.getStudentId()).ifPresent(existing -> {
-//                student.setCreatedBy(existing.getCreatedBy());
-//                student.setCreatedOn(existing.getCreatedOn());
-//            });
-//            logger.info("Updating student ID: {}", student.getStudentId());
-//        }
-//        student.setModifiedBy(user);
-//        return studentRepository.save(student);
-//    }
-
-//    @Transactional
-//    public void saveStudentWithUser(Student student, String username, String password, String createdBy) {
-//        if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
-//            throw new IllegalArgumentException("Username and password must be provided");
-//        }
-//        if (userQueryService.usernameExists(username.trim())) {
-//            throw new IllegalArgumentException("Username already exists: " + username);
-//        }
-//
-//        logger.info("Saving student with user: {}, username: {}", student.getName(), username);
-//        Student savedStudent = saveStudent(student, createdBy);
-//
-//        User user = new User();
-//        user.setUsername(username.trim());
-//        user.setPassword(passwordEncoder.encode(password));
-//        user.setRole(UserRole.STUDENT);
-//        //user.setStudent(savedStudent);
-//        user.setCreatedBy(createdBy);
-//        user.setDeleteFlag(false);
-//        userRepository.save(user);
-//        logger.info("Created user for student {} with username {}", savedStudent.getName(), username);
-//    }
 
     @Transactional
     public void saveStudentWithUser(Student student, String username, String password, String createdBy) {

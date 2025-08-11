@@ -19,9 +19,7 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConfig {
 
-    /* ========================
-       JSON Producer & Template
-       ======================== */
+   //JSON Producer & Template
     @Bean
     public ProducerFactory<String, Object> jsonProducerFactory() {
         Map<String, Object> config = new HashMap<>();
@@ -36,9 +34,7 @@ public class KafkaConfig {
         return new KafkaTemplate<>(jsonProducerFactory());
     }
 
-    /* ========================
-       String Producer & Template
-       ======================== */
+    //String Producer & Template
     @Bean
     public ProducerFactory<String, String> stringProducerFactory() {
         Map<String, Object> config = new HashMap<>();
@@ -53,9 +49,7 @@ public class KafkaConfig {
         return new KafkaTemplate<>(stringProducerFactory());
     }
 
-    /* ========================
-       JSON Consumer & Listener
-       ======================== */
+    //JSON Consumer & Listener
     @Bean
     public ConsumerFactory<String, Object> jsonConsumerFactory() {
         JsonDeserializer<Object> deserializer = new JsonDeserializer<>();
@@ -77,9 +71,7 @@ public class KafkaConfig {
         return factory;
     }
 
-    /* ========================
-       String Consumer & Listener
-       ======================== */
+    //String Consumer & Listener
     @Bean
     public ConsumerFactory<String, String> stringConsumerFactory() {
         Map<String, Object> config = new HashMap<>();

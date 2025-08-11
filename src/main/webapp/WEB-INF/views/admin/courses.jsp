@@ -210,6 +210,7 @@
         <a href="${pageContext.request.contextPath}/admin/courses/add">Add Course</a>
         <a href="${pageContext.request.contextPath}/admin/marks/list">Marks</a>
         <a href="${pageContext.request.contextPath}/admin/courses/enroll">Enroll Students</a>
+        <a href="${pageContext.request.contextPath}/admin/reports">View Final Report</a>
     </nav>
 </aside>
 

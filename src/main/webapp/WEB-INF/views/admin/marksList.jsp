@@ -183,9 +183,13 @@
 <body>
 
 <div class="header">
-    <div class="brand">Student App — Admin</div>
-    <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
-    <div><a href="${pageContext.request.contextPath}/logout">Logout</a></div>
+    <div class="left-side">
+        <div class="brand">Student App — Admin</div>
+        <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
+    </div>
+    <div class="right-side">
+        <a href="${pageContext.request.contextPath}/logout">Logout</a>
+    </div>
 </div>
 
 <div class="layout">
@@ -198,6 +202,7 @@
             <a href="${pageContext.request.contextPath}/admin/courses/add">Add Course</a>
             <a href="${pageContext.request.contextPath}/admin/marks/list" class="active">Marks</a>
             <a href="${pageContext.request.contextPath}/admin/courses/enroll">Enroll Students</a>
+            <a href="${pageContext.request.contextPath}/admin/reports">View Final Report</a>
         </nav>
     </aside>
 

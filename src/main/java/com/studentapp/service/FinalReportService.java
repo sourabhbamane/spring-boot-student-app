@@ -19,19 +19,39 @@ public class FinalReportService {
 
     public FinalReport saveOrUpdate(FinalReport report) {
         report.setUpdatedOn(LocalDateTime.now());
-
         if (report.getCreatedOn() == null) {
             report.setCreatedOn(LocalDateTime.now());
         }
-
-        return reportRepository.save(report);
+        Optional<FinalReport> existing = reportRepository.findByStudentId(report.getStudentId());
+        return existing.map(r -> {
+            r.setAverageMarks(report.getAverageMarks());
+            r.setGrade(report.getGrade());
+            r.setPercentile(report.getPercentile());
+            r.setUpdatedOn(report.getUpdatedOn());
+            return reportRepository.save(r);
+        }).orElseGet(() -> reportRepository.save(report));
     }
-
     public Optional<FinalReport> getByStudentId(Long studentId) {
         return reportRepository.findByStudentId(studentId);
     }
 
     public List<FinalReport> getAllReports() {
-        return reportRepository.findAll();
+        return reportRepository.findAllActiveReports();
     }
+
+//    public Optional<FinalReport> getByStudentId(Long studentId) {
+//        return reportRepository.findByStudentId(studentId);
+//    }
+//
+//    public List<FinalReport> getAllReports() {
+//        return reportRepository.findAll();
+//    }
+//
+//    public Optional<FinalReport> getByStudentId(Long studentId) {
+//        return reportRepository.findByStudentId(studentId);
+//    }
+//
+//    public List<FinalReport> getAllReports() {
+//        return reportRepository.findAll();
+//    }
 }

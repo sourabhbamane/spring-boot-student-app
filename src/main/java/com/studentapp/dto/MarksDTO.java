@@ -24,4 +24,16 @@ public class MarksDTO {
     @Min(value = 0, message = "Marks must be >= 0")
     @Max(value = 100, message = "Marks must be <= 100")
     private Integer marks;
+
+    // Additional properties for display purposes
+    private String studentName;
+    private String courseName;
+
+    // Constructor for backwards compatibility (if needed elsewhere)
+    public MarksDTO(Long id, Long studentId, Integer courseId, Integer marks) {
+        this.id = id;
+        this.studentId = studentId;
+        this.courseId = courseId;
+        this.marks = marks;
+    }
 }

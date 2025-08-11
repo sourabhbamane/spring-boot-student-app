@@ -62,16 +62,33 @@ public class MarksService {
 
         String effectiveUser = (user != null && !user.trim().isEmpty()) ? user : "system";
 
-        // Determine new vs update — prefer checking null id if your entity uses Long
-        if (marks.getId() == null || marks.getId() == 0L) {
-            marks.setCreatedBy(effectiveUser);
-            marks.setCreatedOn(LocalDateTime.now());
-            marks.setDeleteFlag(false);
-            logger.info("Inserting new marks for studentId={} and courseId={}", marks.getStudentId(), marks.getCourseId());
+        // Check if this is an update operation
+        if (marks.getId() != null && marks.getId() > 0L) {
+            // This is an update - preserve original creation data
+            Optional<StudentMarks> existingOpt = marksRepository.findById(marks.getId());
+            if (existingOpt.isPresent()) {
+                StudentMarks existing = existingOpt.get();
+
+                // Preserve original creation data (use correct field names)
+                marks.setCreatedBy(existing.getCreatedBy());
+                marks.setCreatedOn(existing.getCreatedOn());
+                marks.setDeleteFlag(existing.isDeleteFlag()); // Preserve delete flag
+
+                // Set update metadata (use correct field names)
+                marks.setModifiedBy(effectiveUser);
+                marks.setModifiedOn(LocalDateTime.now());
+
+                logger.info("Updating marks ID {} by {}", marks.getId(), effectiveUser);
+            }
         } else {
+            // This is a new record - set creation data
+            marks.setCreatedBy(effectiveUser);
+            marks.setCreatedOn(LocalDateTime.now()); // Use correct field name
+            marks.setDeleteFlag(false);
             marks.setModifiedBy(effectiveUser);
             marks.setModifiedOn(LocalDateTime.now());
-            logger.info("Updating marks ID {} by {}", marks.getId(), effectiveUser);
+
+            logger.info("Inserting new marks for studentId={} and courseId={}", marks.getStudentId(), marks.getCourseId());
         }
 
         logger.debug("Saving marks: studentId={}, courseId={}, marks={}",
@@ -84,12 +101,59 @@ public class MarksService {
 
         return saved;
     }
+//    @Transactional
+//    public StudentMarks saveOrUpdateMarks(StudentMarks marks, String user) {
+//        if (marks == null) {
+//            logger.error("Attempted to save null StudentMarks object");
+//            throw new IllegalArgumentException("StudentMarks cannot be null");
+//        }
+//        if (marks.getStudentId() == null || marks.getCourseId() == null || marks.getMarks() == null) {
+//            logger.error("Invalid StudentMarks fields: studentId={}, courseId={}, marks={}",
+//                    marks.getStudentId(), marks.getCourseId(), marks.getMarks());
+//            throw new IllegalArgumentException("Student ID, Course ID, and Marks must be set");
+//        }
+//
+//        // Validate existence (optional but recommended)
+//        if (!studentRepository.findById(marks.getStudentId()).isPresent()) {
+//            logger.error("Student not found with id={}", marks.getStudentId());
+//            throw new IllegalArgumentException("Student not found: " + marks.getStudentId());
+//        }
+//        if (!courseRepository.findById(marks.getCourseId()).isPresent()) {
+//            logger.error("Course not found with id={}", marks.getCourseId());
+//            throw new IllegalArgumentException("Course not found: " + marks.getCourseId());
+//        }
+//
+//        String effectiveUser = (user != null && !user.trim().isEmpty()) ? user : "system";
+//
+//        // Determine new vs update — prefer checking null id if your entity uses Long
+//        if (marks.getId() == null || marks.getId() == 0L) {
+//            marks.setCreatedBy(effectiveUser);
+//            marks.setCreatedOn(LocalDateTime.now());
+//            marks.setDeleteFlag(false);
+//            logger.info("Inserting new marks for studentId={} and courseId={}", marks.getStudentId(), marks.getCourseId());
+//        } else {
+//            marks.setModifiedBy(effectiveUser);
+//            marks.setModifiedOn(LocalDateTime.now());
+//            logger.info("Updating marks ID {} by {}", marks.getId(), effectiveUser);
+//        }
+//
+//        logger.debug("Saving marks: studentId={}, courseId={}, marks={}",
+//                marks.getStudentId(), marks.getCourseId(), marks.getMarks());
+//
+//        StudentMarks saved = marksRepository.save(marks);
+//
+//        logger.info("Marks saved successfully for studentId={} and courseId={}",
+//                saved.getStudentId(), saved.getCourseId());
+//
+//        return saved;
+//    }
 
     @Transactional(readOnly = true)
     public Optional<StudentMarks> getMarksById(Long id) {
         if (id == null) return Optional.empty();
         logger.debug("Fetching marks by ID: {}", id);
-        return marksRepository.findById(id).filter(m -> Boolean.FALSE.equals(m.getDeleteFlag()));
+        return marksRepository.findById(id)
+                .filter(m -> !m.getCourse().isDeleteFlag());
     }
 
     @Transactional(readOnly = true)

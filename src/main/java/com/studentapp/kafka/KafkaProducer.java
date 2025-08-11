@@ -21,9 +21,8 @@ public class KafkaProducer {
     private static final String FULL_GRADE_RECALC_TOPIC = "grade-recalc-topic";
     private static final String SINGLE_GRADE_RECALC_TOPIC = "grade-single-recalc-topic";
 
-    /**
-     * Send a MarksEvent to Kafka (JSON)
-     */
+    // Send a MarksEvent to Kafka (JSON)
+
     public void sendMarksEvent(MarksEvent event) {
         kafkaJsonTemplate.send(MARKS_TOPIC, event)
                 .whenComplete((result, ex) -> {
@@ -35,9 +34,7 @@ public class KafkaProducer {
                 });
     }
 
-    /**
-     * Trigger full grade recalculation
-     */
+    //Trigger full grade recalculation
     public void sendFullGradeRecalcTrigger(String trigger) {
         kafkaStringTemplate.send(FULL_GRADE_RECALC_TOPIC, trigger)
                 .whenComplete((result, ex) -> {
@@ -49,9 +46,7 @@ public class KafkaProducer {
                 });
     }
 
-    /**
-     * Trigger single student recalculation
-     */
+    //Trigger single student recalculation
 
     public void sendStudentGradeRecalcTrigger(Long studentId) {
         kafkaStringTemplate.send(SINGLE_GRADE_RECALC_TOPIC, String.valueOf(studentId))

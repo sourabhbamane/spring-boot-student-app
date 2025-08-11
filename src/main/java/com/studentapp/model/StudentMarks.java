@@ -2,8 +2,6 @@ package com.studentapp.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,18 +40,36 @@ public class StudentMarks {
     private String createdBy;
 
     @Column(name = "created_on")
-    @CreationTimestamp
-    private LocalDateTime createdOn;
+    private LocalDateTime createdOn; // Remove @CreationTimestamp to handle manually
 
     @Column(name = "modified_by", length = 255)
     private String modifiedBy;
 
     @Column(name = "modified_on")
-    @UpdateTimestamp
-    private LocalDateTime modifiedOn;
+    private LocalDateTime modifiedOn; // Remove @UpdateTimestamp to handle manually
 
     @Column(name = "delete_flag", nullable = false)
-    private Boolean deleteFlag = false;
+    @Builder.Default
+    private boolean deleteFlag = false;
+
+
+    // Lifecycle methods to ensure proper defaults
+    @PrePersist
+    protected void onCreate() {
+        if (createdOn == null) {
+            createdOn = LocalDateTime.now();
+        }
+        if (modifiedOn == null) {
+            modifiedOn = LocalDateTime.now();
+        }
+        // deleteFlag defaults to false via @Builder.Default
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        modifiedOn = LocalDateTime.now();
+    }
+
     // Getter to use in JSP
     public String getFormattedCreatedOn() {
         return createdOn != null

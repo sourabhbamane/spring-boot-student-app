@@ -73,4 +73,16 @@ public class Student {
                 : "";
     }
 
+    @PrePersist
+    protected void onCreate() {
+        if (createdOn == null) {
+            createdOn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        modifiedOn = LocalDateTime.now();
+    }
+
 }

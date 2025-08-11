@@ -51,5 +51,5 @@ public class StudentCourse {
     private LocalDateTime modifiedOn;
 
     @Column(name = "delete_flag", nullable = false)
-    private Boolean deleteFlag = false;
+    private boolean deleteFlag = false;
 }

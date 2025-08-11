@@ -118,9 +118,13 @@
 <body>
 
 <div class="header">
-  <div class="brand">Student App — Admin</div>
-  <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
-  <div><a href="${pageContext.request.contextPath}/logout">Logout</a></div>
+    <div class="left-side">
+        <div class="brand">Student App — Admin</div>
+        <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
+    </div>
+    <div class="right-side">
+        <a href="${pageContext.request.contextPath}/logout">Logout</a>
+    </div>
 </div>
 
 <div class="layout">
@@ -155,7 +159,6 @@
                   <th>Average Marks</th>
                   <th>Grade</th>
                   <th>Percentile</th>
-                  <th>Last Updated</th>
                 </tr>
               </thead>
               <tbody>
@@ -165,7 +168,6 @@
                     <td>${report.averageMarks}</td>
                     <td>${report.grade}</td>
                     <td>${report.percentile}%</td>
-                    <td>${report.updatedOn}</td>
                   </tr>
                 </c:forEach>
               </tbody>

@@ -66,60 +66,101 @@ public class MarksController {
             RedirectAttributes redirectAttributes
     ) {
         if (result.hasErrors()) {
-            model.addAttribute("error", "Please correct the form errors.");
-            model.addAttribute("students", studentService.getAllStudents());
-            model.addAttribute("courses", List.of());
-            return "admin/assignMarks";
+            // Handle validation errors based on whether this is edit or create
+            if (marksDTO.getId() != null) {
+                // This is an edit operation - populate names for redisplay
+                populateStudentAndCourseNames(marksDTO);
+                model.addAttribute("error", "Please correct the form errors.");
+                return "admin/editMarks";
+            } else {
+                model.addAttribute("error", "Please correct the form errors.");
+                model.addAttribute("students", studentService.getAllStudents());
+                model.addAttribute("courses", List.of());
+                return "admin/assignMarks";
+            }
         }
 
         Optional<Student> studentOpt = studentService.getStudentById(marksDTO.getStudentId());
         Optional<Course> courseOpt = courseService.getCourseById(marksDTO.getCourseId());
 
         if (studentOpt.isEmpty() || courseOpt.isEmpty()) {
-            model.addAttribute("error", "Invalid student or course.");
-        } else if (!courseService.isStudentEnrolled(marksDTO.getStudentId(), marksDTO.getCourseId())) {
-            model.addAttribute("error", "Student is not enrolled in the selected course.");
-        } else {
-            Optional<StudentMarks> existingOpt =
-                    marksService.getMarksByStudentIdAndCourseId(marksDTO.getStudentId(), marksDTO.getCourseId());
-
-            if (existingOpt.isPresent() &&
-                    !Objects.equals(existingOpt.get().getId(), marksDTO.getId()) &&
-                    !existingOpt.get().getDeleteFlag()) {
-                model.addAttribute("error", "Marks already assigned for this student and course.");
-            } else {
-                StudentMarks studentMarks = StudentMarks.builder()
-                        .id(marksDTO.getId())
-                        .studentId(marksDTO.getStudentId())
-                        .courseId(marksDTO.getCourseId())
-                        .marks(marksDTO.getMarks())
-                        .build();
-
-                String currentUser = userDetails != null ? userDetails.getUsername() : "system";
-                marksService.saveOrUpdateMarks(studentMarks, currentUser);
-
-                // Build event
-                String action = existingOpt.isPresent() ? "UPDATE" : "CREATE";
-                MarksEvent event = MarksEvent.builder()
-                        .studentId(marksDTO.getStudentId())
-                        .courseId(Long.valueOf(marksDTO.getCourseId()))
-                        .marks(marksDTO.getMarks())
-                        .action(action)
-                        .timestamp(LocalDateTime.now())
-                        .build();
-
-                // Send to Kafka
-                kafkaProducer.sendMarksEvent(event);
-                kafkaProducer.sendStudentGradeRecalcTrigger(marksDTO.getStudentId());
-
-                redirectAttributes.addFlashAttribute("success", "Marks saved and grade recalculation triggered!");
-                return "redirect:/admin/dashboard";
-            }
+            handleError(marksDTO, model, "Invalid student or course.");
+            return getReturnView(marksDTO);
         }
 
-        model.addAttribute("students", studentService.getAllStudents());
-        model.addAttribute("courses", List.of());
-        return "admin/assignMarks";
+        if (!courseService.isStudentEnrolled(marksDTO.getStudentId(), marksDTO.getCourseId())) {
+            handleError(marksDTO, model, "Student is not enrolled in the selected course.");
+            return getReturnView(marksDTO);
+        }
+
+        // Check for existing marks (but exclude current record if editing)
+        Optional<StudentMarks> existingOpt =
+                marksService.getMarksByStudentIdAndCourseId(marksDTO.getStudentId(), marksDTO.getCourseId());
+
+        if (existingOpt.isPresent() &&
+                !Objects.equals(existingOpt.get().getId(), marksDTO.getId()) &&
+                !existingOpt.get().isDeleteFlag()) {
+            handleError(marksDTO, model, "Marks already assigned for this student and course.");
+            return getReturnView(marksDTO);
+        }
+
+        // Save the marks
+        StudentMarks studentMarks = StudentMarks.builder()
+                .id(marksDTO.getId()) // Will be null for new records, not null for updates
+                .studentId(marksDTO.getStudentId())
+                .courseId(marksDTO.getCourseId())
+                .marks(marksDTO.getMarks())
+                .build();
+
+        String currentUser = userDetails != null ? userDetails.getUsername() : "system";
+        marksService.saveOrUpdateMarks(studentMarks, currentUser);
+
+        // Build event - use correct logic to determine action
+        String action = (marksDTO.getId() != null) ? "UPDATE" : "CREATE";
+        MarksEvent event = MarksEvent.builder()
+                .studentId(marksDTO.getStudentId())
+                .courseId(Long.valueOf(marksDTO.getCourseId()))
+                .marks(marksDTO.getMarks())
+                .action(action)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        // Send to Kafka
+        kafkaProducer.sendMarksEvent(event);
+        kafkaProducer.sendStudentGradeRecalcTrigger(marksDTO.getStudentId());
+
+        redirectAttributes.addFlashAttribute("success",
+                action.equals("UPDATE") ? "Marks updated successfully!" : "Marks assigned successfully!");
+
+        return "redirect:/admin/marks/list";
+    }
+
+    private void handleError(MarksDTO marksDTO, Model model, String errorMessage) {
+        model.addAttribute("error", errorMessage);
+        if (marksDTO.getId() != null) {
+            // Edit mode - populate student and course names
+            populateStudentAndCourseNames(marksDTO);
+        } else {
+            // Create mode - populate dropdowns
+            model.addAttribute("students", studentService.getAllStudents());
+            model.addAttribute("courses", List.of());
+        }
+    }
+
+    private String getReturnView(MarksDTO marksDTO) {
+        return (marksDTO.getId() != null) ? "admin/editMarks" : "admin/assignMarks";
+    }
+
+    private void populateStudentAndCourseNames(MarksDTO marksDTO) {
+        Optional<Student> studentOpt = studentService.getStudentById(marksDTO.getStudentId());
+        Optional<Course> courseOpt = courseService.getCourseById(marksDTO.getCourseId());
+
+        if (studentOpt.isPresent()) {
+            marksDTO.setStudentName(studentOpt.get().getName());
+        }
+        if (courseOpt.isPresent()) {
+            marksDTO.setCourseName(courseOpt.get().getCourseName());
+        }
     }
 
     @GetMapping("/list")
@@ -134,22 +175,57 @@ public class MarksController {
         return "admin/marksList";
     }
 
-    @GetMapping("/edit/{id}")
-    public String editMarks(@PathVariable("id") long id, Model model) {
-        Optional<StudentMarks> existing = marksService.getMarksById(id);
-        if (existing.isEmpty()) {
-            model.addAttribute("error", "Marks not found.");
-            return "redirect:/admin/marks/list";
-        }
-
-        StudentMarks sm = existing.get();
-        MarksDTO marksDTO = new MarksDTO(sm.getId(), sm.getStudentId(), sm.getCourseId(), sm.getMarks());
-
-        model.addAttribute("marksDTO", marksDTO);
-        model.addAttribute("students", studentService.getAllStudents());
-        model.addAttribute("courses", List.of());
-        return "admin/assignMarks";
+//    @GetMapping("/edit/{id}")
+//    public String editMarks(@PathVariable("id") long id, Model model) {
+//        Optional<StudentMarks> existing = marksService.getMarksById(id);
+//        if (existing.isEmpty()) {
+//            model.addAttribute("error", "Marks not found.");
+//            return "redirect:/admin/marks/list";
+//        }
+//
+//        StudentMarks sm = existing.get();
+//        MarksDTO marksDTO = new MarksDTO(sm.getId(), sm.getStudentId(), sm.getCourseId(), sm.getMarks());
+//
+//        model.addAttribute("marksDTO", marksDTO);
+//        model.addAttribute("students", studentService.getAllStudents());
+//        model.addAttribute("courses", List.of());
+//        return "admin/assignMarks";
+//    }
+@GetMapping("/edit/{id}")
+public String editMarks(@PathVariable("id") long id, Model model) {
+    Optional<StudentMarks> existing = marksService.getMarksById(id);
+    if (existing.isEmpty()) {
+        model.addAttribute("error", "Marks not found.");
+        return "redirect:/admin/marks/list";
     }
+
+    StudentMarks sm = existing.get();
+
+    // Get student and course details for display
+    Optional<Student> studentOpt = studentService.getStudentById(sm.getStudentId());
+    Optional<Course> courseOpt = courseService.getCourseById(sm.getCourseId());
+
+    if (studentOpt.isEmpty() || courseOpt.isEmpty()) {
+        model.addAttribute("error", "Student or course not found.");
+        return "redirect:/admin/marks/list";
+    }
+
+    Student student = studentOpt.get();
+    Course course = courseOpt.get();
+
+    // Create MarksDTO with all required fields including names
+    MarksDTO marksDTO = MarksDTO.builder()
+            .id(sm.getId())
+            .studentId(sm.getStudentId())
+            .courseId(sm.getCourseId())
+            .marks(sm.getMarks())
+            .studentName(student.getName()) // Add student name
+            .courseName(course.getCourseName())   // Add course name
+            .build();
+
+    model.addAttribute("marksDTO", marksDTO);
+    return "admin/editMarks";
+}
 
     @GetMapping("/delete/{id}")
     public String deleteMarks(@PathVariable("id") long id,

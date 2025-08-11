@@ -16,22 +16,8 @@ public class GradeRecalculationConsumer {
     private final GradeCalculationScheduler scheduler;
     private static final Logger logger = LoggerFactory.getLogger(GradeRecalculationConsumer.class);
 
-    /**
-     * Listener for full recalculation (all students)
-     */
-//    @KafkaListener(
-//            topics = "grade-recalc-topic",
-//            groupId = "student-app-group",
-//            containerFactory = "stringKafkaListenerFactory"
-//    )
-//    public void handleFullRecalculation(String message) {
-//        logger.info("📥 Received full grade recalculation trigger: {}", message);
-//        scheduler.recalculateGrades();
-//    }
 
-    /**
-     * Listener for single-student recalculation
-     */
+    //Listener for single-student recalculation
     @KafkaListener(
             topics = "grade-single-recalc-topic",
             groupId = "student-app-group",
@@ -46,6 +32,7 @@ public class GradeRecalculationConsumer {
             logger.error("❌ Invalid studentId received: {}", studentIdStr);
         }
     }
+
     @KafkaListener(
             topics = "grade-recalc-topic",
             groupId = "student-app-group",
