@@ -181,98 +181,96 @@
     </style>
 </head>
 <body>
-
-<div class="header">
-    <div class="left-side">
-        <div class="brand">Student App — Admin</div>
-        <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
+    <div class="header">
+        <div class="left-side">
+            <div class="brand">Student App — Admin</div>
+            <div class="welcome">Welcome, <strong>${sessionScope.username}</strong></div>
+        </div>
+        <div class="right-side">
+            <a href="${pageContext.request.contextPath}/logout">Logout</a>
+        </div>
     </div>
-    <div class="right-side">
-        <a href="${pageContext.request.contextPath}/logout">Logout</a>
-    </div>
-</div>
 
-<div class="layout">
-    <aside class="sidebar">
-        <nav class="nav">
-            <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
-            <a href="${pageContext.request.contextPath}/admin/registerStudent">Add Student</a>
-            <a href="${pageContext.request.contextPath}/admin/students">All Students</a>
-            <a href="${pageContext.request.contextPath}/admin/courses">Courses</a>
-            <a href="${pageContext.request.contextPath}/admin/courses/add">Add Course</a>
-            <a href="${pageContext.request.contextPath}/admin/marks/list" class="active">Marks</a>
-            <a href="${pageContext.request.contextPath}/admin/courses/enroll">Enroll Students</a>
-            <a href="${pageContext.request.contextPath}/admin/reports">View Final Report</a>
-        </nav>
-    </aside>
+    <div class="layout">
+        <aside class="sidebar">
+            <nav class="nav">
+                <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/admin/registerStudent">Add Student</a>
+                <a href="${pageContext.request.contextPath}/admin/students">All Students</a>
+                <a href="${pageContext.request.contextPath}/admin/courses">Courses</a>
+                <a href="${pageContext.request.contextPath}/admin/courses/add">Add Course</a>
+                <a href="${pageContext.request.contextPath}/admin/marks/list" class="active">Marks</a>
+                <a href="${pageContext.request.contextPath}/admin/courses/enroll">Enroll Students</a>
+                <a href="${pageContext.request.contextPath}/admin/reports">View Final Report</a>
+            </nav>
+        </aside>
 
-    <main class="main">
-        <div class="container">
-            <div class="card">
-                <h2>Assigned Marks</h2>
+        <main class="main">
+            <div class="container">
+                <div class="card">
+                    <h2>Assigned Marks</h2>
 
-                <div class="controls">
-                    <div class="left muted">
-                        Showing ${marksPage.totalElements} records
+                    <div class="controls">
+                        <div class="left muted">
+                            Showing ${marksPage.totalElements} records
+                        </div>
+                        <div class="actions">
+                            <a href="${pageContext.request.contextPath}/admin/marks/assign" class="btn assign">+ Assign Marks</a>
+                            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn back">← Dashboard</a>
+                        </div>
                     </div>
-                    <div class="actions">
-                        <a href="${pageContext.request.contextPath}/admin/marks/assign" class="btn assign">+ Assign Marks</a>
-                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn back">← Dashboard</a>
-                    </div>
-                </div>
 
-                <c:if test="${marksPage.totalElements == 0}">
-                    <div class="no-data">No marks assigned yet.</div>
-                </c:if>
+                    <c:if test="${marksPage.totalElements == 0}">
+                        <div class="no-data">No marks assigned yet.</div>
+                    </c:if>
 
-                <c:if test="${marksPage.totalElements > 0}">
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Course</th>
-                                    <th>Marks</th>
-                                    <th>Assigned By</th>
-                                    <th>Assigned On</th>
-                                    <th style="text-align:right;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="mark" items="${marksPage.content}">
+                    <c:if test="${marksPage.totalElements > 0}">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <div style="font-weight:600;">${mark.student.name}</div>
-                                            <div class="muted">ID: ${mark.studentId}</div>
-                                        </td>
-                                        <td>
-                                            <div style="font-weight:600;">${mark.course.courseName}</div>
-                                            <div class="muted">Course ID: ${mark.courseId}</div>
-                                        </td>
-                                        <td style="font-weight:700;">${mark.marks}</td>
-                                        <td class="muted">${mark.createdBy}</td>
-                                        <td class="muted">${mark.formattedCreatedOn}</td>
-                                        <td class="actions">
-                                            <a class="btn edit" href="${pageContext.request.contextPath}/admin/marks/edit/${mark.id}">Edit</a>
-                                            <a class="btn delete" href="${pageContext.request.contextPath}/admin/marks/delete/${mark.id}"
-                                               onclick="return confirm('Delete this mark?');">Delete</a>
-                                        </td>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Marks</th>
+                                        <th>Assigned By</th>
+                                        <th>Assigned On</th>
+                                        <th style="text-align:right;">Actions</th>
                                     </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
-                    </div>
-                </c:if>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="mark" items="${marksPage.content}">
+                                        <tr>
+                                            <td>
+                                                <div style="font-weight:600;">${mark.studentName}</div>
+                                                <div class="muted">ID: ${mark.studentId}</div>
+                                            </td>
+                                            <td>
+                                                <div style="font-weight:600;">${mark.courseName}</div>
+                                                <div class="muted">Course ID: ${mark.courseId}</div>
+                                            </td>
+                                            <td style="font-weight:700;">${mark.marks}</td>
+                                            <td class="muted">${mark.createdBy}</td>
+                                            <td class="muted">${mark.formattedCreatedOn}</td>
+                                            <td class="actions">
+                                                <a class="btn edit" href="${pageContext.request.contextPath}/admin/marks/edit/${mark.id}">Edit</a>
+                                                <a class="btn delete" href="${pageContext.request.contextPath}/admin/marks/delete/${mark.id}"
+                                                   onclick="return confirm('Delete this mark?');">Delete</a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </c:if>
 
-                <div class="pagination">
-                    <c:forEach var="i" begin="0" end="${marksPage.totalPages - 1}">
-                        <a href="?page=${i}" class="${i == currentPage ? 'active' : ''}">${i + 1}</a>
-                    </c:forEach>
+                    <div class="pagination">
+                        <c:forEach var="i" begin="0" end="${marksPage.totalPages - 1}">
+                            <a href="?page=${i}&size=10" class="${i == currentPage ? 'active' : ''}">${i + 1}</a>
+                        </c:forEach>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
-</div>
-
+        </main>
+    </div>
 </body>
 </html>

@@ -169,7 +169,7 @@ public class MarksController {
             @RequestParam(defaultValue = "10") int size,
             Model model) {
 
-        Page<StudentMarks> marksPage = marksService.getMarksPage(page, size);
+        Page<MarksDTO> marksPage = marksService.getMarksPage(page, size);
         model.addAttribute("marksPage", marksPage);
         model.addAttribute("currentPage", page);
         return "admin/marksList";
