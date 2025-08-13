@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,12 +31,20 @@ public class MarksDTO {
     // Additional properties for display purposes
     private String studentName;
     private String courseName;
-
+    private String createdBy;
+    private LocalDateTime createdOn;
     // Constructor for backwards compatibility (if needed elsewhere)
     public MarksDTO(Long id, Long studentId, Integer courseId, Integer marks) {
         this.id = id;
         this.studentId = studentId;
         this.courseId = courseId;
         this.marks = marks;
+    }
+
+    // Getter to use in JSP
+    public String getFormattedCreatedOn() {
+        return createdOn != null
+                ? createdOn.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                : "-";
     }
 }

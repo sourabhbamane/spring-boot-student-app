@@ -1,5 +1,6 @@
 package com.studentapp.service;
 
+import com.studentapp.dto.MarksDTO;
 import com.studentapp.model.StudentMarks;
 import com.studentapp.repository.StudentMarksRepository;
 import com.studentapp.repository.StudentRepository;
@@ -190,11 +191,11 @@ public class MarksService {
         logger.debug("Fetching marks for student ID {} and course ID {}", studentId, courseId);
         return marksRepository.findByStudentIdAndCourseIdAndDeleteFlagFalse(studentId, courseId);
     }
-    @Transactional(readOnly = true)
-    public Page<StudentMarks> getMarksPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdOn"));
-        return marksRepository.findByDeleteFlagFalse(pageable);
-    }
+//    @Transactional(readOnly = true)
+//    public Page<StudentMarks> getMarksPage(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdOn"));
+//        return marksRepository.findByDeleteFlagFalse(pageable);
+//    }
 
     /// /
     public StudentMarks saveMarks(StudentMarks studentMarks, String createdBy) {
@@ -230,5 +231,9 @@ public class MarksService {
 
     public List<StudentMarks> getAllActiveMarks() {
         return marksRepository.findByDeleteFlagFalse();
+    }
+    public Page<MarksDTO> getMarksPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return marksRepository.findAllMarksWithStudentAndCourse(pageable);
     }
 }

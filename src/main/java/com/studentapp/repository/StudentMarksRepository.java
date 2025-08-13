@@ -1,5 +1,6 @@
 package com.studentapp.repository;
 
+import com.studentapp.dto.MarksDTO;
 import com.studentapp.model.StudentMarks;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,4 +29,13 @@ public interface StudentMarksRepository extends JpaRepository<StudentMarks, Long
     Page<StudentMarks> findByDeleteFlagFalse(Pageable pageable);
     List<StudentMarks> findAllByDeleteFlagFalse();
     //List<StudentMarks> findByDeleteFlagFalse();
+
+    // New query to fetch MarksDTO with joined Student and Course
+    @Query("SELECT new com.studentapp.dto.MarksDTO(" +
+            "m.id, m.studentId, m.courseId, m.marks, m.student.name, m.course.courseName, m.createdBy, m.createdOn) " +
+            "FROM StudentMarks m " +
+            "JOIN m.student s " +
+            "JOIN m.course c " +
+            "WHERE m.deleteFlag = false")
+    Page<MarksDTO> findAllMarksWithStudentAndCourse(Pageable pageable);
 }
