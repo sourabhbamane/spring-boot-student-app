@@ -67,47 +67,6 @@ public class AdminController {
         }
     }
 
-//    @GetMapping("/students")
-//    public String viewAllStudents(Model model, HttpSession session) {
-//        logger.info("=== Starting viewAllStudents method ===");
-//
-//        // Verify user is authenticated
-//        String currentUser = (String) session.getAttribute("username");
-//        logger.info("Current user from session: {}", currentUser);
-//
-//        try {
-//            List<Student> students = studentService.getAllStudents();
-//            logger.info("Retrieved {} students from service", students != null ? students.size() : 0);
-//
-//            if (students != null && !students.isEmpty()) {
-//                logger.info("Students found:");
-//                for (Student s : students) {
-//                    logger.info("  - Student: ID={}, Name={}, Email={}, DeleteFlag={}",
-//                            s.getStudentId(), s.getName(), s.getEmail(), s.isDeleteFlag());
-//                }
-//            } else {
-//                logger.warn("No students found or students list is null");
-//            }
-//
-//            // Add students to model
-//            model.addAttribute("students", students);
-//
-//            // Add debugging attributes
-//            model.addAttribute("studentsCount", students != null ? students.size() : 0);
-//            model.addAttribute("debugInfo", "Students loaded at " + java.time.LocalDateTime.now());
-//
-//            logger.info("Added {} students to model", students != null ? students.size() : 0);
-//            logger.info("Returning view: admin/students");
-//
-//            return "admin/students";
-//
-//        } catch (Exception e) {
-//            logger.error("Error fetching students: {}", e.getMessage(), e);
-//            model.addAttribute("error", "Error fetching students: " + e.getMessage());
-//            model.addAttribute("students", new java.util.ArrayList<>());
-//            return "admin/students";
-//        }
-//    }
 
     @GetMapping("/students")
     public String viewStudents(@RequestParam(defaultValue = "0") int page,
