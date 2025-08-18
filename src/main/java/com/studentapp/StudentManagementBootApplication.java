@@ -2,7 +2,7 @@ package com.studentapp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-@SpringBootAppli
+@SpringBootApplication
 public class StudentManagementBootApplication {
 
 
